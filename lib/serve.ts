@@ -1,7 +1,7 @@
 import { Handler } from 'https://goru.me/x/http';
 import { file } from './file.ts';
 
-interface StaticOptions {
+interface StaticRules {
   paths?: {
     [ route: string ]: string,
   },
@@ -10,39 +10,38 @@ interface StaticOptions {
   'cache-control'?: string,
 }
 
-export const serve = (route: string, root: string, options: StaticOptions = {}): Handler => {
-  route = route.replace(/\*?$/, '*');
-  root = root.replace(/(^\.\/)?/, './');
+export const serve = (root: string, rules: StaticRules = {}): Handler => {
+  rules['access-control-allow-origin'] ??= '*';
+  rules['cache-control'] ??= 'max-age=0';
+  rules.paths ??= {};
 
-  options['access-control-allow-origin'] ??= '*';
-  options['cache-control'] ??= 'max-age=0';
+  const opts = {
+    'access-control-allow-origin': '*',
+    'cache-control': 'max-age=0',
 
-  return async ({ href, respond }) => {
-    const pathname = new URL(href).pathname;
+    ...rules,
+  };
 
-    const pattern = new URLPattern({ pathname: route });
+  root = root?.[0] === '/' ? root : `${ Deno.cwd() }/${ root }`;
+
+  return async ({ href, respond, route }) => {
+    const pattern = new URLPattern({ pathname: route ?? '/*' });
     if (!pattern.test(href)) return;
-    
-    const base = route.split('/').filter((item) => item != '*' && item != '');
-    const rest = pathname.replace(/^\//, '').split('/').filter((_, index) => index >= base.length);
-    const path = `${ root.replace(/\/$/, '') }/${ [ ...rest ].join('/') }`;
 
-    if (path[0] !== '.') respond({ status: 403 });
-
-    const response = await file(path);
+    const path = pattern.exec(href)?.pathname.groups?.['0']?.replace(/\/+/g, '/') ?? '/';
+    const response = await file(`${ root }/${ path }`);
 
     if (response.status === 404) return respond(response);
 
-    const etag = btoa(encodeURIComponent(`${ rest.join('/') }-${ (response.headers as Record<string, string>)['last-modified'] ?? '0' }`));
+    const size  = (response.headers as Record<string, string>)['content-length']!;
+    const mtime = (response.headers as Record<string, string>)['last-modified']!;
+    const etag  = `"${ size }-${ mtime }"`;
 
-    const headers = { ...response.headers } as Record<string, string>;
+    const headers = { ...response.headers, etag } as Record<string, string>;
 
-    headers['etag'] = etag;
-    headers['access-control-allow-origin'] = options['access-control-allow-origin'] ?? '*';
-    headers['cache-control'] = options.paths?.[ path.replace(/^\./, '') ] ?? options['cache-control'] ?? 'max-age=0';
+    headers['access-control-allow-origin'] = opts['access-control-allow-origin'];
+    headers['cache-control'] = opts.paths?.[ `/${ path }` ] ?? opts['cache-control'];
 
-    response.headers = { ...headers };
-
-    respond(response);
+    respond({ ...response, headers });
   };
 };
