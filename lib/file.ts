@@ -4,6 +4,8 @@ import { MIME_TYPES } from './constants.ts';
 export const file = async (path: string): Promise<HttpResponse> => {
   path = path.replace(/\/\.\//g, '/');
 
+  path = path?.[0] === '/' ? path : `${ Deno.cwd() }/${ path }`;
+
   const file = await fetch(`file://${ path }`).then(file => file.body).catch(() => null);
   const type = MIME_TYPES?.[ path.split('.').pop() ?? 'txt' ] ?? 'text/plain';
 
