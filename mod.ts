@@ -1,2 +1,2 @@
-export { file } from './lib/file.ts';
-export { serve } from './lib/serve.ts';
+export { file } from '/lib/file.ts';
+export { serve } from '/lib/serve.ts';

@@ -1,5 +1,5 @@
-import { Handler } from 'https://goru.me/x/http';
-import { file } from './file.ts';
+import { Handler } from 'http';
+import { file } from '/lib/file.ts';
 
 interface StaticRules {
   paths?: {

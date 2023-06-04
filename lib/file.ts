@@ -1,5 +1,5 @@
-import { HttpResponse } from 'https://goru.me/x/http';
-import { MIME_TYPES } from './constants.ts';
+import { HttpResponse } from 'http';
+import { MIME_TYPES } from '/lib/constants.ts';
 
 export const file = async (path: string): Promise<HttpResponse> => {
   path = path?.[0] === '/' ? path : `${ Deno.cwd() }/${ path }`;
