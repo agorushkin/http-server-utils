@@ -1,8 +1,0 @@
-{
-  "imports": {
-    "/": "./",
-    "./": "./",
-
-    "http": "https://raw.githubusercontent.com/agorushkin/http-server/master/mod.ts"
-  }
-}

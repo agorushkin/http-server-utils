@@ -1,5 +1,5 @@
-import { Handler } from 'http';
-import { file } from '/lib/file.ts';
+import { Handler } from '../deps.ts';
+import { file } from './file.ts';
 
 interface StaticRules {
   paths?: {
