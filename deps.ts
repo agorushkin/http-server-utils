@@ -1,1 +1,1 @@
-export * from 'https://raw.githubusercontent.com/agorushkin/http-server/master/mod.ts';
+export * from 'https://raw.githubusercontent.com/agorushkin/http-server/main/mod.ts';
